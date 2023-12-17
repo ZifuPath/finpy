@@ -22,6 +22,19 @@ option_df = finpy.option_chain('NIFTY')
 print(option_df)
 ```
 
+- for Cloud you need to install new version of curl and add to system variable path before the previously added curl path
+    ```ruby
+    from finpy import FINPY
+
+    # Create an instance of FINPY
+    finpy = FINPY(cloud=True)
+
+    # Example usage of option_chain method
+    option_df = finpy.option_chain('NIFTY')
+    print(option_df)
+
+    ```    
+
 ## Documnetation
 
 For detailed documentation and API reference, check the docstrings in the code.
