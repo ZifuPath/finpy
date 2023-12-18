@@ -56,26 +56,40 @@ class FINPY:
         :param data :str: The URL or data for the API request.
         :return dict: The response data in JSON format.
         """
+    def get_response(self,data):
+
         try:
             if self.cloud:
-                if (("%26" in data) or ("%20" in data)):
-                    ENCODED_URL = data
+                if ("%26" in data) or ("%20" in data):
+                    encoded_url = data
                 else:
-                    ENCODED_URL = urllib.parse.quote(data, safe=':/?&=')
-                payload_var = 'curl -b cookies.txt "' + ENCODED_URL + '"' + CLOUD_HEADER + ''
+                    encoded_url = urllib.parse.quote(data, safe=':/?&=')
+                payload_var = f'curl -b cookies.txt "{encoded_url}" {CLOUD_HEADER}'
                 try:
                     response = os.popen(payload_var).read()
                     response = json.loads(response)
                 except ValueError:
-                    output2 = os.popen('curl -c cookies.txt "' + BASE_URL + '"' + CLOUD_HEADER + '').read()
+                    payload2 = "https://www.nseindia.com"
+                    output2 = os.popen(f'curl -c cookies.txt "{payload2}" {CLOUD_HEADER}').read()
                     response = os.popen(payload_var).read()
                     response = json.loads(response)
+
+                return response
             else:
-                session = self.generate_session()
-                response = session.get(data, headers=HEADERS).json()
-            return response
+                try:
+                    response = requests.get(data, headers=HEADERS).json()
+                except Exception:
+                    try:
+                        s = self.generate_session()
+                        payload2 = BASE_URL
+                        output2 = s.get(payload2, headers=HEADERS).json()
+                        response = s.get(data, headers=HEADERS).json()
+                    except Exception:
+                        print("Error making request in local mode.")
+                        response = None
+                return response
         except BaseException as e:
-            raise ValueError(f'Error in Fetching Data : Reason : {e}')
+            raise ValueError(f'Eror in Fetching Data : Reason : {e}')
 
     @staticmethod
     def modify_symbol(symbol:str) -> str:
@@ -195,12 +209,4 @@ class FINPY:
         return data.reset_index(drop=True)
 
 
-if __name__ == '__main__':
-    fin = FINPY()
-    # symbol = "INFY"
-    # start_date = "01-01-2021"
-    # end_date = "30-01-2021"
-    # df = fin.get_candle_data(symbol=symbol,start_date=start_date,end_date=end_date)
-    # print(df.head())
-    df = fin.option_chain('FINNIFTY')
-    print(df.head())
+
